@@ -51,10 +51,3 @@ function main() {
 }
 
 main();
-
-
-  git init
-  git commit -m "first commit"
-  git branch -M main
-  git remote add origin https://github.com/alexmota-dev/GRPC_WITH_NODE.git
-  git push -u origin main
