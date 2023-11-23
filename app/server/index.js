@@ -17,10 +17,12 @@
  */
 
 var PROTO_PATH = __dirname + '/../protos/helloworld.proto';
+var PROTO_PATH_USER = __dirname + '/../protos/user.proto';
+
 
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
-var packageDefinition = protoLoader.loadSync(
+var packageDefinitionHello = protoLoader.loadSync(
     PROTO_PATH,
     {keepCase: true,
      longs: String,
@@ -28,17 +30,41 @@ var packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
-var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
+
+var packageDefinitionUser = protoLoader.loadSync(
+  PROTO_PATH_USER,
+  {keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  });
+
+
+
+var hello_proto = grpc.loadPackageDefinition(packageDefinitionHello).helloworld;
+var user_proto = grpc.loadPackageDefinition(packageDefinitionUser).user;
 
 /**
- * Implements the SayHello RPC method.
+ * Implements the methods hello
  */
 function sayHello(call, callback) {
-  callback(null, {messagge: 'Hello ' + call.request.name});
+  callback(null, {message: 'Hello ' + call.request.name});
 }
 
-function sayHelloAgain(call, callback) {
-  callback(null, {messagge: 'Hello again, ' + call.request.name});
+/**
+ * Implements the methods user
+ */
+
+function login(call, callback) {
+  var userName = call.request.name;
+  console.log('userName', userName);
+  if(userName == 'Alex') {
+    callback(null, {message: 'Acesso liberado ' + userName});
+  }
+  else{
+    callback(null, {message: 'Acesso negado'});
+  }
 }
 
 /**
@@ -47,7 +73,8 @@ function sayHelloAgain(call, callback) {
  */
 function main() {
   var server = new grpc.Server();
-  server.addService(hello_proto.Greeter.service, {sayHello: sayHello, sayHelloAgain: sayHelloAgain});
+  server.addService(hello_proto.Greeter.service, {sayHello: sayHello});
+  server.addService(user_proto.User.service, { login: login});
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
     server.start();
   });

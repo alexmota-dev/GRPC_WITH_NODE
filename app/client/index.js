@@ -17,10 +17,13 @@
  */
 
 var PROTO_PATH = __dirname + '/../protos/helloworld.proto';
+var PROTO_PATH_USER = __dirname + '/../protos/user.proto';
+
 
 var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
-var protoLoader = require('@grpc/proto-loader');
+var protoLoader = require('@grpc/proto-loader'); 
+
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {keepCase: true,
@@ -29,7 +32,17 @@ var packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
+  var packageDefinitionUser = protoLoader.loadSync(
+    PROTO_PATH_USER,
+    {keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true
+    });
+
 var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
+var user_proto = grpc.loadPackageDefinition(packageDefinitionUser).user;
 
 function main() {
   var argv = parseArgs(process.argv.slice(2), {
@@ -41,12 +54,18 @@ function main() {
   } else {
     target = 'localhost:50051';
   }
-  var client = new hello_proto.Greeter(target,
-                                       grpc.credentials.createInsecure());
 
-  client.sayHello({name: 'Alex'}, function(err, response) {
-    console.log('Greeting:', response);
+  var clientHello = new hello_proto.Greeter(target, grpc.credentials.createInsecure());
+
+  clientHello.sayHello({name: 'Alex'}, function(err, response) {
+    console.log('Resposta do hello:', response);
   })
+  var clientUser = new user_proto.User(target, grpc.credentials.createInsecure());
+
+  clientUser.login({name: 'Alexx'}, function(err, response) {
+    console.log('Resposta deve ser Alex:', response);
+  })
+  
 
 }
 
