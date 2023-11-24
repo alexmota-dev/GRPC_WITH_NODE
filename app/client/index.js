@@ -18,11 +18,13 @@
 
 var PROTO_PATH = __dirname + '/../protos/helloworld.proto';
 var PROTO_PATH_USER = __dirname + '/../protos/user.proto';
+var PROTO_PATH_DOCUMENT = __dirname + '/../protos/document.proto';
 
 
 var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader'); 
+var yargs = require('yargs');
 
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -41,8 +43,19 @@ var packageDefinition = protoLoader.loadSync(
       oneofs: true
     });
 
+var packageDefinitionDocument = protoLoader.loadSync(
+  PROTO_PATH_DOCUMENT,
+  {keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  });
+
 var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
 var user_proto = grpc.loadPackageDefinition(packageDefinitionUser).user;
+var documet_proto = grpc.loadPackageDefinition(packageDefinitionDocument).document;
+
 
 function main() {
   var argv = parseArgs(process.argv.slice(2), {
@@ -55,18 +68,49 @@ function main() {
     target = 'localhost:50051';
   }
 
-  var clientHello = new hello_proto.Greeter(target, grpc.credentials.createInsecure());
-
-  clientHello.sayHello({name: 'Alex'}, function(err, response) {
-    console.log('Resposta do hello:', response);
-  })
   var clientUser = new user_proto.User(target, grpc.credentials.createInsecure());
 
-  clientUser.login({name: 'Alexx'}, function(err, response) {
-    console.log('Resposta deve ser Alex:', response);
-  })
-  
+  function loginShortcut(){
+    clientUser.login({name: 'Jorge'}, function(err, response) {
+      console.log('Resposta:', response);
+    })
+  }
 
+  var clientDocument = new documet_proto.Document(target, grpc.credentials.createInsecure());
+
+  function createDocumentShortcut(){
+    clientDocument.createDocument({id: 2, titulo: 'Documento 2', ultimaAtualizacao: 0, autor: 2 }, function(err, response) {
+      console.log('Resposta:', response);
+    })
+  }
+
+  function findAllDocumentsShortcut(){
+    clientDocument.findAllDocuments({test:1}, function(err, response) {
+      console.log('Resposta:', response);
+    })
+  }
+
+  const args = yargs(process.argv.slice(2)).argv;
+  const functionName = args._[0];
+
+  switch (functionName) {
+    case 'login':
+      loginShortcut();
+      break;
+    
+    case 'create-document':
+      createDocumentShortcut();
+      break;
+    
+    case 'find-all-documents':
+      findAllDocumentsShortcut();
+      break;
+
+  
+    default:
+      console.log('Função não reconhecida', functionName);
+      break;
+  }
 }
 
 main();
