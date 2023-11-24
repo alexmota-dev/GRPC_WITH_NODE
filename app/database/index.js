@@ -15,10 +15,11 @@ function dataUSers(){
 
       const lines = data.split('\n');
       const usersArray = lines.map((line, index) => {
-        const parts = line.split(','); // Divide a linha em partes usando a vírgula como separador
-        const name = parts[0] ? parts[0].trim() : ''; // Obtém o nome (trim só se existir)
-        const id = parts[1] ? parts[1].trim() : index + 1; // Obtém o id (trim só se existir)
 
+        const parts = line.split(',');
+        const name = parts[0] ? parts[0].trim() : '';
+        const id = parts[1] ? parts[1].trim() : index + 1;
+        
         return { name: name, id: id };
       });
 
