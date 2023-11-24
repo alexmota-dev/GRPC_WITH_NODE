@@ -6,7 +6,6 @@ var PROTO_PATH_DOCUMENT = __dirname + '/../protos/document.proto';
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 const dataUSers = require('../database');
-const { number } = require('yargs');
 
 var packageDefinitionHello = protoLoader.loadSync(
   PROTO_PATH,
