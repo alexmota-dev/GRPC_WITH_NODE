@@ -36,4 +36,5 @@ message UserRequest {
 // The response message containing the message
 message UserResponse {
   string message = 1;
+  string token = 2;
 }
