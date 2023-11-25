@@ -102,7 +102,7 @@ async function checkDocumentExists(idDocument){
   return errorMessage;
 }
 
-async function findNoteById(idNote){
+function findNoteById(idNote){
 
   for(i=0; i< notes.length; i++){
     if(notes[i].id == idNote){
@@ -209,6 +209,34 @@ async function findAllNotesByDocument(call, callback) {
 
   var message = colors.green + 'Sucesso ao buscar as notas.' + colors.reset;
   callback(null, {message: message, notesWithAcess: notesWithAcess});
+}
+
+async function showNote(call, callback){
+  
+  var idNote = call.request.idNote;
+  console.log("showNote: ", idNote);
+  var userAuth = call.request.userAuth;
+  console.log("userAuth: ", userAuth);
+  var note = findNoteById(idNote);
+  console.log("note: ", note);
+
+  if(note == null){
+    var errorMessage = colors.red + 'Nota não existe.' + colors.reset;
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+  var idDocument = note.idDocument;
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+
+  if(errorMessage){
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+
+  
+  var message = colors.green + 'Sucesso ao buscar Nota.' + colors.reset;
+  console.log(message);
+  callback(null, {note: note, message: message});
 }
 
 async function editNoteInDocument(call, callback) {
@@ -385,7 +413,8 @@ function main() {
   server.addService(note_proto.Note.service,
     { createNote: createNote,
       findAllNotesByDocument: findAllNotesByDocument,
-      editNoteInDocument: editNoteInDocument
+      editNoteInDocument: editNoteInDocument,
+      showNote: showNote
     });
     
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {

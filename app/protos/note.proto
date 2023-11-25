@@ -28,12 +28,34 @@ service Note {
 
   rpc findNoteById (FindNoteRequest) returns (ReadNoteResponse) {}
 
+  rpc showNote (ShowNoteRequest) returns (ShowNoteResponse) {}
+
   rpc findAllNotes(FindNotesRequest) returns (FindNotesRequestResponse) {}
 
   rpc editNoteInDocument(EditNoteInDocumentRequest) returns (FindNotesRequestResponse) {}
 
   rpc findAllNotesByDocument(FindAllNotesByDocumentRequest) returns (FindAllNotesByDocumentResponse) {}
 
+}
+
+message NoteById {
+  string id = 1;
+  string title = 2;
+  string text = 3;
+  bool beingEdited = 4;
+  string userWhoIsEditing = 5;
+  string idDocument = 6;
+}
+
+message ShowNoteRequest {
+  string idNote = 1;
+  string userAuth = 2;
+}
+
+message ShowNoteResponse {
+  NoteById note = 1;
+  string message = 2;
+  string errorMessage = 3;
 }
 
 message FindNoteRequest {

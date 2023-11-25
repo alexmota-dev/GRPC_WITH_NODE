@@ -131,6 +131,24 @@ function main() {
       });
     });
   }
+  // 4 LISTAR O CONTEÚDO DE UMA NOTA
+  function showNoteShortcut(callback){
+
+    rl.question('Usuario: ', (userAuth) => {
+      rl.question('Id da Nota: ', (idNote) => {
+        clientNote.showNote({idNote:idNote, userAuth: userAuth}, function(err, response) {
+          if(response.errorMessage){
+            console.log(response.errorMessage);
+          }
+          else if(response.message && response.note){
+            console.log(response.message);
+            console.log(response.note);
+          }
+          callback(true);
+        })
+      });
+    })
+  }
 
   // 5 LISTAR O CONTEÚDO DE UM DOCUMENTO (todas as notas)
   function findAllNotesByDocumentShortcut(callback){
@@ -243,6 +261,11 @@ function main() {
         break;
       case '4':
         console.log('Ação de LISTAR O CONTEÚDO DE UMA NOTA seria executada aqui.');
+        showNoteShortcut((callback)=>{
+          if(callback){
+            startMenu();
+          }
+        })
         break;
       case '5':
         console.log('Ação de LISTAR O CONTEÚDO DE UM DOCUMENTO (todas as notas) seria executada aqui.');
@@ -308,14 +331,14 @@ function main() {
     console.log('[1]  - '+ colors.green +'Criar um documento' + colors.reset);
     console.log('[2]  - '+ colors.green +'Criar uma nota em um documento'+ colors.reset);
     console.log('[3]  - Editar uma nota em um documento');
-    console.log('[4]  - Listar o conteúdo de uma nota');
+    console.log('[4]  - '+ colors.green +'Listar o conteúdo de uma nota'+ colors.reset);
     console.log('[5]  - '+ colors.green +'Listar o conteúdo de um documento (todas as notas)'+ colors.reset);
     console.log('[6]  - '+ colors.green +'Apresentar detalhes sobre um documento' + colors.reset);
     console.log('[7]  - '+ colors.green +'Listar usuários existentes no servidor'+ colors.reset);
     console.log('[8]  - '+ colors.green +'Associar outro usuário ao documento'+ colors.reset);
     console.log('[9]  - Listar documentos com acesso');
     console.log('[10] - Listar documentos com acesso alterados a partir de uma data/hora');
-    console.log('[11] - Listar Todos os DOcumentos sem restrição');
+    console.log('[11] - '+ colors.green +'Listar Todos os DOcumentos sem restrição'+ colors.reset);
 
   }
   
