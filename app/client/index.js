@@ -87,24 +87,7 @@ function main() {
       });
     });
   }
-
-  // 7 LISTAR USUÁRIOS EXISTENTES NO SERVIDOR
-  function findAllUsersShortcut(callback){
-
-    rl.question('Usuario: ', (userAuth) => {
-      clientUser.findAllUsers({userAuth: userAuth}, function(err, response) {
-        if(response.errorMessage){
-          console.log(response.errorMessage);
-        }
-        else if(response.message && response.users){
-          console.log(response.message);
-          console.log(response.users);
-        }
-        callback(true);
-      })
-    });
-  }
-
+  
   //2 CRIAR UMA NOTA EM UM DOCUMENTO
   function createNoteShortcut(callback){
 
@@ -149,7 +132,25 @@ function main() {
     });
   }
 
-   // 6 APRESENTAR DETALHES SOBRE UM DOCUMENTO
+  // 5 LISTAR O CONTEÚDO DE UM DOCUMENTO (todas as notas)
+  function findAllNotesByDocumentShortcut(callback){
+    rl.question('Usuario: ', (userAuth) => {
+      rl.question('Id do Documento: ', (idDocument) => {
+        clientNote.findAllNotesByDocument({userAuth: userAuth, idDocument: idDocument}, function(err, response) {
+          if(response.errorMessage){
+            console.log(response.errorMessage);
+          }
+          else if(response.message && response.notesWithAcess){
+            console.log(response.message);
+            console.log(response.notesWithAcess);
+          }
+          callback(true);
+        });
+      });
+    })
+  }
+
+  // 6 APRESENTAR DETALHES SOBRE UM DOCUMENTO
   function findDocumentByIdShortcut(callback){
 
     rl.question('Usuario: ', (userAuth) => {
@@ -170,22 +171,21 @@ function main() {
     })
   }
 
-  // 5 LISTAR O CONTEÚDO DE UM DOCUMENTO (todas as notas)
-  function findAllNotesByDocumentShortcut(callback){
+  // 7 LISTAR USUÁRIOS EXISTENTES NO SERVIDOR
+  function findAllUsersShortcut(callback){
+
     rl.question('Usuario: ', (userAuth) => {
-      rl.question('Id do Documento: ', (idDocument) => {
-        clientNote.findAllNotesByDocument({userAuth: userAuth, idDocument: idDocument}, function(err, response) {
-          if(response.errorMessage){
-            console.log(response.errorMessage);
-          }
-          else if(response.message && response.notesWithAcess){
-            console.log(response.message);
-            console.log(response.notesWithAcess);
-          }
-          callback(true);
-        });
-      });
-    })
+      clientUser.findAllUsers({userAuth: userAuth}, function(err, response) {
+        if(response.errorMessage){
+          console.log(response.errorMessage);
+        }
+        else if(response.message && response.users){
+          console.log(response.message);
+          console.log(response.users);
+        }
+        callback(true);
+      })
+    });
   }
 
   //8 ASSOCIAR OUTRO USUÁRIO AO DOCUMENTO
