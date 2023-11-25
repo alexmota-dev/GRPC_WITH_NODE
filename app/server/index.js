@@ -38,40 +38,65 @@ var hello_proto = grpc.loadPackageDefinition(packageDefinitionHello).helloworld;
 var user_proto = grpc.loadPackageDefinition(packageDefinitionUser).user;
 var document_proto = grpc.loadPackageDefinition(packageDefinitionDocument).document;
 
-var documents = [{id: 1, titulo: 'Documento 1', ultimaAtualizacao: 0, autor: 1, acesso: [1] }]
+var documents = [{id: 1, title: 'Documento 1', latestUpdate: new Date(), author: 1, acess: [1] }]
 
-var notas = [{id: 1, titulo: 'Nota 1', texto: 'texto da nota' , sendoEditada: false, UserEditando: 0, idDocumento: 1}]
+var notas = [{id: 1, title: 'Nota 1', text: 'texto da nota' , beingEdited: false, userWhoIsEditing: 0, idDocument: 1}]
 
 function sayHello(call, callback) {
   callback(null, {message: 'Hello ' + call.request.name});
 }
 
-async function login(call, callback) {
+async function auth(name) {
 
-  var userName = call.request.name;
   users = await dataUSers();
 
   for(i=0; i < users.length; i++){
-    if(users[i].name == userName){
-      return callback(null, {message: 'Acesso permitido', token: users[i].id});
+    if(users[i].name == name){
+      return true
     }
   }
 
-  callback(null, {message: 'Acesso negado'});
+  return false;
 }
 
-function createDocument(call, callback) {
+function generetedDocumentId(){
+  for(i = 0;i<documents.length;i++){
+    if(documents[i].id == i){
+      return i+1;
+    }
+  }
+}
 
-  var id = call.request.id;
-  var titulo = call.request.titulo;
-  var ultimaAtualizacao = call.request.ultimaAtualizacao;
-  var autor = call.request.autor;
-  var acesso = [call.request.autor];
+async function createDocument(call, callback) {
+  
+  var author = call.request.userAuth;
+  if(!(await auth(author))){
+    console.log('Usuário não authorizado');
+    callback(null, {message: 'Usuário não authorizado'});
+    return;
+  }
 
-  var documentCreated = {id: id, titulo: titulo, ultimaAtualizacao: ultimaAtualizacao, autor: autor, acesso: acesso};
+  console.log('Usuário authorizado');
+
+  var id = generetedDocumentId();
+  var title = call.request.title;
+  var acess = [call.request.userAuth];
+
+  var documentCreated = {id: id, title: title, latestUpdate: new Date(), author: author, acess: acess};
   documents.push(documentCreated);
 
   callback(null, {message: 'Criado com sucesso'});
+}
+
+function findAllDocumentsWithAcess(call, callback) {
+  var documentsWithAcess = [];
+  for(i=0;i<documents.length;i++){
+    if(documents[i].acess.includes(call.request.userAuth)){
+      documentsWithAcess.push(documents[i]);
+    }
+  }
+  callback(null, {documentsWithAcess: documentsWithAcess});
+
 }
 
 function findAllDocuments(call, callback) {
@@ -80,12 +105,13 @@ function findAllDocuments(call, callback) {
 
 }
 
+
+
 function main() {
 
   var server = new grpc.Server();
 
   server.addService(hello_proto.Greeter.service, {sayHello: sayHello});
-  server.addService(user_proto.User.service, { login: login});
   
   server.addService(document_proto.Document.service, { createDocument: createDocument, findAllDocuments: findAllDocuments});
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
