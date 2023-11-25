@@ -51,10 +51,11 @@ async function auth(name) {
 
   for(i=0; i < users.length; i++){
     if(users[i].name == name){
+      console.log(users[i],"=",name);
       return true
     }
   }
-
+  console.log("nao autorizado",name);
   return false;
 }
 
@@ -231,9 +232,25 @@ function findAllDocumentsWithAcess(call, callback) {
 
 }
 
-function findAllUsers(call, callback) {
+async function findAllUsers(call, callback) {
 
-  callback(null, {documentsWithAcess: documentsWithAcess});
+  console.log("chamou a funcao userAll");
+  userAuth = call.request.userAuth;
+  console.log("o userAuth e: " + userAuth);
+  if(!(await auth(userAuth))){
+
+    var errorMessage = colors.red + 'Usuário não authorizado.' + colors.reset;
+    console.log(errorMessage);
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+
+  users = await dataUSers();
+  console.log(users);
+
+  var message = colors.green + 'Sucesso ao buscar os usuários.' + colors.reset;
+  console.log(message);
+  callback(null, {users: users, message: message});
 
 }
 
@@ -266,10 +283,6 @@ function main() {
       editNoteInDocument: editNoteInDocument
     });
     
-    
-  server.addService(document_proto.Document.service, { createDocument: createDocument, findAllDocuments: findAllDocuments});
-
-  server.addService(document_proto.Document.service, { createDocument: createDocument, findAllDocuments: findAllDocuments});
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
     server.start();
   });

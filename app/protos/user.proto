@@ -30,10 +30,16 @@ service User {
 
 // The request message containing the user's name.
 message findAllUsersRequest {
+  string userAuth = 1;
+}
+
+message TypeUsers {
   string name = 1;
 }
 
 // The response message containing the message
 message findAllUsersResponse {
-  repeated findAllUsersRequest users = 1;
+  repeated TypeUsers users = 1;
+  string message = 2;
+  string errorMessage = 3;
 }

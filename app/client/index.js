@@ -1,3 +1,4 @@
+var PROTO_PATH_USER = __dirname + '/../protos/user.proto';
 var PROTO_PATH_DOCUMENT = __dirname + '/../protos/document.proto';
 var PROTO_PATH_NOTE = __dirname + '/../protos/note.proto';
 
@@ -8,6 +9,15 @@ var parseArgs = require('minimist');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader'); 
 const colors = require('../utils/colors');
+
+var packageDefinitionUser = protoLoader.loadSync(
+  PROTO_PATH_USER,
+  {keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  });
 
 var packageDefinitionDocument = protoLoader.loadSync(
   PROTO_PATH_DOCUMENT,
@@ -27,8 +37,10 @@ var packageDefinitionNote = protoLoader.loadSync(
     oneofs: true
   });
 
+var user_proto = grpc.loadPackageDefinition(packageDefinitionUser).user;
 var documet_proto = grpc.loadPackageDefinition(packageDefinitionDocument).document;
 var note_proto = grpc.loadPackageDefinition(packageDefinitionNote).note;
+
 
 
 
@@ -48,6 +60,7 @@ function main() {
     target = 'localhost:50051';
   }
 
+  var clientUser = new user_proto.User(target, grpc.credentials.createInsecure());
   var clientDocument = new documet_proto.Document(target, grpc.credentials.createInsecure());
   var clientNote = new note_proto.Note(target, grpc.credentials.createInsecure());
 
@@ -57,6 +70,7 @@ function main() {
     clientNote.close();
   }
 
+  // 1 CRIAR UM DOCUMENTO
   function createDocumentShortcut(callback){
 
     rl.question('Quem é o author do documento: ', (userAuth) => {
@@ -74,6 +88,24 @@ function main() {
     });
   }
 
+  // 7 LISTAR USUÁRIOS EXISTENTES NO SERVIDOR
+  function findAllUsersShortcut(callback){
+
+    rl.question('Usuario: ', (userAuth) => {
+      clientUser.findAllUsers({userAuth: userAuth}, function(err, response) {
+        if(response.errorMessage){
+          console.log(response.errorMessage);
+        }
+        else if(response.message && response.users){
+          console.log(response.message);
+          console.log(response.users);
+        }
+        callback(true);
+      })
+    });
+  }
+
+  //2 CRIAR UMA NOTA EM UM DOCUMENTO
   function createNoteShortcut(callback){
 
     rl.question('Usuario: ', (userAuth) => {
@@ -95,7 +127,8 @@ function main() {
     });
   }
 
-  function createNoteShortcut(callback){
+  // 3 EDITAR UMA NOTA EM UM DOCUMENTO
+  function editNoteInDocumentShortcut(callback){
 
     rl.question('Usuario: ', (userAuth) => {
       rl.question('Id do Documento: ', (idDocument) => {
@@ -116,6 +149,7 @@ function main() {
     });
   }
 
+  // 7 LISTAR USUÁRIOS EXISTENTES NO SERVIDOR
   function findAllNotesByDocumentShortcut(callback){
     rl.question('Usuario: ', (userAuth) => {
       rl.question('Id do Documento: ', (idDocument) => {
@@ -182,6 +216,11 @@ function main() {
         break;
       case '7':
         console.log('Ação de LISTAR USUÁRIOS EXISTENTES NO SERVIDOR seria executada aqui.');
+        findAllUsersShortcut((callback)=>{
+          if(callback){
+            startMenu();
+          }
+        })
         break;
       case '8':
         console.log('Ação de ASSOCIAR OUTRO USUÁRIO AO DOCUMENTO seria executada aqui.');
@@ -221,7 +260,7 @@ function main() {
     console.log('[4]  - Listar o conteúdo de uma nota');
     console.log('[5]  - '+ colors.green +'Listar o conteúdo de um documento (todas as notas)'+ colors.reset);
     console.log('[6]  - Apresentar detalhes sobre um documento');
-    console.log('[7]  - Listar usuários existentes no servidor');
+    console.log('[7]  - '+ colors.green +' Listar usuários existentes no servidor'+ colors.reset);
     console.log('[8]  - Associar outro usuário ao documento');
     console.log('[9]  - Listar documentos com acesso');
     console.log('[10] - Listar documentos com acesso alterados a partir de uma data/hora');
