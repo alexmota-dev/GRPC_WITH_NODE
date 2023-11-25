@@ -24,14 +24,13 @@ package document;
 // The user service definition.
 service Document {
 
-  rpc createDocument (CreateDocumentRequest) returns (ReadDocumentResponse) {}
+  rpc createDocument (CreateDocumentRequest) returns (CreateDocumentResponse) {}
 
   rpc findDocumentById (FindDocumentRequest) returns (ReadDocumentResponse) {}
 
-  rpc findAllDocuments(FindAllTestsRequest) returns (ReadDocumentsResponse) {}
+  rpc findAllDocuments(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
-
-
+  rpc findAllDocumentsWithAcessShortcut(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
 }
 
@@ -41,25 +40,28 @@ message FindDocumentRequest {
 }
 
 message CreateDocumentRequest {
-  string id = 1;
-  string titulo = 2;
-  string ultimaAtualizacao = 3;
-  string autor = 4;
+  string userAuth = 1;
+  string title = 2;
+  
+}
+
+message CreateDocumentResponse {
+  string message = 1;
   
 }
 
 message ReadDocumentResponse {
   string id = 1;
-  string titulo = 2;
-  string ultimaAtualizacao = 3;
-  string autor = 4;
-  string acesso = 5;
+  string title = 2;
+  string latestUpdate = 3;
+  string author = 4;
+  repeated string acess = 5;
 }
 
 message ReadDocumentsResponse {
   repeated ReadDocumentResponse documents = 1;
 }
 
-message FindAllTestsRequest{
+message FindDocumentsRequest{
   string test = 1;
 }
