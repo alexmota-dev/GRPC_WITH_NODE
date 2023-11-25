@@ -149,7 +149,28 @@ function main() {
     });
   }
 
-  // 7 LISTAR USUÁRIOS EXISTENTES NO SERVIDOR
+   // 6 APRESENTAR DETALHES SOBRE UM DOCUMENTO
+  function findDocumentByIdShortcut(callback){
+
+    rl.question('Usuario: ', (userAuth) => {
+      rl.question('Id do Documento: ', (id) => {
+        clientDocument.findDocumentById({id:id, userAuth: userAuth}, function(err, response) {
+          if(response.errorMessage){
+            console.log(response.errorMessage);
+          }
+          else if(response.message && response.document){
+            console.log(response.message);
+            console.log(response.document);
+            console.log(response.notes);
+
+          }
+          callback(true);
+        })
+      });
+    })
+  }
+
+  // 5 LISTAR O CONTEÚDO DE UM DOCUMENTO (todas as notas)
   function findAllNotesByDocumentShortcut(callback){
     rl.question('Usuario: ', (userAuth) => {
       rl.question('Id do Documento: ', (idDocument) => {
@@ -213,6 +234,11 @@ function main() {
         break;
       case '6':
         console.log('Ação de APRESENTAR DETALHES SOBRE UM DOCUMENTO seria executada aqui.');
+        findDocumentByIdShortcut((callback)=>{
+          if(callback){
+            startMenu();
+          }
+        })
         break;
       case '7':
         console.log('Ação de LISTAR USUÁRIOS EXISTENTES NO SERVIDOR seria executada aqui.');
@@ -259,8 +285,8 @@ function main() {
     console.log('[3]  - Editar uma nota em um documento');
     console.log('[4]  - Listar o conteúdo de uma nota');
     console.log('[5]  - '+ colors.green +'Listar o conteúdo de um documento (todas as notas)'+ colors.reset);
-    console.log('[6]  - Apresentar detalhes sobre um documento');
-    console.log('[7]  - '+ colors.green +' Listar usuários existentes no servidor'+ colors.reset);
+    console.log('[6]  - '+ colors.green +'Apresentar detalhes sobre um documento' + colors.reset);
+    console.log('[7]  - '+ colors.green +'Listar usuários existentes no servidor'+ colors.reset);
     console.log('[8]  - Associar outro usuário ao documento');
     console.log('[9]  - Listar documentos com acesso');
     console.log('[10] - Listar documentos com acesso alterados a partir de uma data/hora');

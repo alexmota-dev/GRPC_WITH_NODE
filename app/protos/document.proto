@@ -26,17 +26,42 @@ service Document {
 
   rpc createDocument (CreateDocumentRequest) returns (CreateDocumentResponse) {}
 
-  rpc findDocumentById (FindDocumentRequest) returns (ReadDocumentResponse) {}
+  rpc findDocumentById (FindDocumentByIdRequest) returns (findDocumentByIdResponse) {}
 
   rpc findAllDocuments(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
   rpc findAllDocumentsWithAcessShortcut(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
 }
-
-message FindDocumentRequest {
+message NotesByDocument {
   string id = 1;
+  string title = 2;
+  string text = 3;
+  bool beingEdited = 4;
+  string userWhoIsEditing = 5;
+  string idDocument = 6;
+}
+
+
+message DocumentById {
+  string id = 1;
+  string title = 2;
+  string latestUpdate = 3; //mudar esse type 
+  string author = 4;
+  repeated string acess = 5;
+}
+
+message FindDocumentByIdRequest {
+  string userAuth = 1;
+  string id = 2;
   
+}
+
+message findDocumentByIdResponse{
+  DocumentById document = 1;
+  repeated NotesByDocument notes =2;
+  string message = 3;
+  string errorMessage = 4;
 }
 
 message CreateDocumentRequest {

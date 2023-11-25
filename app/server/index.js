@@ -71,6 +71,32 @@ async function userHasAcessIsDocument(name, idDocument) {
   return false;
 }
 
+async function checksUserHasAccessDocument(userAuth, idDocument){
+
+  if(!(await userHasAcessIsDocument(userAuth, idDocument))){
+    errorMessage = colors.red + 'Usuário não tem acesso ao documento.' + colors.reset;
+    return errorMessage;
+  }
+  return false;
+}
+
+async function verifyUserIsAuthorized(userAuth){
+  
+  if(!(await auth(userAuth))){
+
+    var errorMessage = colors.red + 'Usuário não authorizado.' + colors.reset;
+    return errorMessage;
+  }
+}
+
+async function checkValueExists(value){
+
+  if(value == null){
+    return false
+  }
+  return true
+}
+
 async function findNoteById(idNote){
 
   for(i=0; i< notes.length; i++){
@@ -132,19 +158,10 @@ async function createNote(call, callback) {
   var title = call.request.title;
   var text = call.request.title;
 
-  if(!(await auth(userAuth))){
-
-    var errorMessage = colors.red + 'Usuário não authorizado.' + colors.reset;
+  errorMessage = await verifyUserIsAuthorized(userAuth);
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+  if(errorMessage){
     callback(null, {errorMessage: errorMessage});
-
-    return;
-  }
-
-  if(!(await userHasAcessIsDocument(userAuth, idDocument))){
-
-    var errorMessage = colors.red + 'Usuário não tem acesso ao documento.' + colors.reset;
-    callback(null, {errorMessage: errorMessage});
-
     return;
   }
 
@@ -165,9 +182,8 @@ async function findAllNotesByDocument(call, callback) {
     return;
   }
 
-  if(!(await userHasAcessIsDocument(userAuth, idDocument))){
-
-    errorMessage = colors.red + 'Usuário não tem acesso ao documento.' + colors.reset;
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+  if(errorMessage){
     callback(null, {errorMessage: errorMessage});
     return;
   }
@@ -203,11 +219,9 @@ async function editNoteInDocument(call, callback) {
     return;
   }
 
-  if(!(await userHasAcessIsDocument(userAuth, idDocument))){
-
-    errorMessage = colors.red + 'Usuário não tem acesso ao documento.' + colors.reset;
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+  if(errorMessage){
     callback(null, {errorMessage: errorMessage});
-    return;
   }
 
   if(!(await documentHasNote(idNote, idDocument))){
@@ -237,10 +251,9 @@ async function findAllUsers(call, callback) {
   console.log("chamou a funcao userAll");
   userAuth = call.request.userAuth;
   console.log("o userAuth e: " + userAuth);
-  if(!(await auth(userAuth))){
 
-    var errorMessage = colors.red + 'Usuário não authorizado.' + colors.reset;
-    console.log(errorMessage);
+  errorMessage = await verifyUserIsAuthorized(userAuth);
+  if(errorMessage){
     callback(null, {errorMessage: errorMessage});
     return;
   }
@@ -260,6 +273,61 @@ function findAllDocuments(call, callback) {
 
 }
 
+async function findDocumentById(call, callback) {
+
+  var userAuth = call.request.userAuth;
+  var id = call.request.id;
+  console.log("dados recebidos id, userAuth: ", id, userAuth);
+  let documentById = {
+    id: null,
+    title: null,
+    latestUpdate: null,
+    author: null,
+    acess: null,
+    notesById: null
+  }
+  let notesById = [];
+  
+  errorMessage = await verifyUserIsAuthorized(userAuth);
+  errorMessage = await checksUserHasAccessDocument(userAuth, id);
+
+  for(i=0;i<documents.length;i++){
+
+    if(documents[i].id == id){
+      documentById.id = documents[i].id;
+      documentById.title = documents[i].title;
+      documentById.latestUpdate = documents[i].latestUpdate;
+      documentById.author = documents[i].author;
+      documentById.acess = documents[i].acess;
+
+    }
+  }
+
+  
+  for(i=0;i<notes.length;i++){
+    
+    if(notes[i].idDocument == id){
+      notesById.push(notes[i]);
+    }
+  }
+  
+  errorMessage = documentById == null ? colors.red + 'Nenhum documento encontrado.' + colors.reset : errorMessage;
+  errorMessage = notesById == null ? colors.red + 'Nenhuma nota encontrada.' + colors.reset : errorMessage;
+  console.log("a mensagem de erro é errorMessage", errorMessage);
+  if(errorMessage){
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+  console.log("Passou do if do error Message")
+  
+  documentById.notesById = notesById;
+  console.log("Verificando valor do document",documentById);
+  var message = colors.green + 'Sucesso ao buscar o documento.' + colors.reset;
+
+  callback(null, {document: documentById, message: message, notes: notesById});
+
+}
+
 
 
 function main() {
@@ -273,6 +341,7 @@ function main() {
 
   server.addService(document_proto.Document.service, 
     { createDocument: createDocument,
+      findDocumentById: findDocumentById,
       findAllDocuments: findAllDocuments,
       findAllDocumentsWithAcess: findAllDocumentsWithAcess
     });
