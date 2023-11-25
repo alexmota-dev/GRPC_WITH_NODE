@@ -111,8 +111,16 @@ function main() {
 
   var server = new grpc.Server();
 
-  server.addService(hello_proto.Greeter.service, {sayHello: sayHello});
-  
+  server.addService(document_proto.Document.service, 
+    { createDocument: createDocument,
+      findAllDocuments: findAllDocuments,
+      findAllDocumentsWithAcess: findAllDocumentsWithAcess
+    });
+    
+  server.addService(note_proto.Note.service,
+    { createNote: createNote,
+    });
+    
   server.addService(document_proto.Document.service, { createDocument: createDocument, findAllDocuments: findAllDocuments});
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
     server.start();
