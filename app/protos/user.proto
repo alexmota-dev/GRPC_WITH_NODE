@@ -24,17 +24,16 @@ package user;
 // The user service definition.
 service User {
 
-  rpc login (UserRequest) returns (UserResponse) {}
+  rpc findAllUsers (findAllUsersRequest) returns (findAllUsersResponse) {}
 
 }
 
 // The request message containing the user's name.
-message UserRequest {
+message findAllUsersRequest {
   string name = 1;
 }
 
 // The response message containing the message
-message UserResponse {
-  string message = 1;
-  string token = 2;
+message findAllUsersResponse {
+  repeated findAllUsersRequest users = 1;
 }
