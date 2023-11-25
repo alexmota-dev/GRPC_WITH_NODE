@@ -41,7 +41,7 @@ var document_proto = grpc.loadPackageDefinition(packageDefinitionDocument).docum
 var note_proto = grpc.loadPackageDefinition(packageDefinitionNote).note;
 
 
-var documents = [{id: 1, title: 'Documento 1', latestUpdate: new Date(), author: 1, acess: ['Alex'] }]
+var documents = [{id: 1, title: 'Documento 1', latestUpdate: new Date(), author: 'Alex', acess: ['Alex'] }]
 
 var notes = [{id: 1, title: 'Nota 1', text: 'texto da nota' , beingEdited: false, userWhoIsEditing: "", idDocument: 1}]
 
@@ -89,12 +89,17 @@ async function verifyUserIsAuthorized(userAuth){
   }
 }
 
-async function checkValueExists(value){
+async function checkDocumentExists(idDocument){
 
-  if(value == null){
-    return false
+  for(i=0;i<documents.length;i++){
+
+    if(documents[i].id == idDocument){
+      return true;
+    }
   }
-  return true
+
+  var errorMessage = colors.red + 'Documento não existe.' + colors.reset;
+  return errorMessage;
 }
 
 async function findNoteById(idNote){
@@ -290,6 +295,7 @@ async function findDocumentById(call, callback) {
   
   errorMessage = await verifyUserIsAuthorized(userAuth);
   errorMessage = await checksUserHasAccessDocument(userAuth, id);
+  errorMessage = await checkDocumentExists(id);
 
   for(i=0;i<documents.length;i++){
 
@@ -313,6 +319,7 @@ async function findDocumentById(call, callback) {
   
   errorMessage = documentById == null ? colors.red + 'Nenhum documento encontrado.' + colors.reset : errorMessage;
   errorMessage = notesById == null ? colors.red + 'Nenhuma nota encontrada.' + colors.reset : errorMessage;
+
   console.log("a mensagem de erro é errorMessage", errorMessage);
   if(errorMessage){
     callback(null, {errorMessage: errorMessage});
@@ -326,6 +333,34 @@ async function findDocumentById(call, callback) {
 
   callback(null, {document: documentById, message: message, notes: notesById});
 
+}
+
+async function associateDocumentWithAnotherUser(call, callback) {
+
+  var userAuth = call.request.userAuth;
+  var idDocument = call.request.idDocument;
+  var newUser = call.request.newUser;
+
+  userIsAuthorized = await auth(userAuth);
+  newUser = await auth(newUser);
+  documentExists = await checkDocumentExists(idDocument);
+
+  
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+  errorMessage = userIsAuthorized ? errorMessage : colors.red + 'Usuário não authorizado.' + colors.reset;
+  console.log('o errorMessage é: ' + errorMessage);
+  errorMessage = newUser ? errorMessage : colors.red + 'O novo usuario não é authorizado.' + colors.reset;
+  console.log('o errorMessage é: ' + errorMessage);
+  errorMessage = documentExists ? errorMessage : colors.red + 'Documento não existe.' + colors.reset;
+  console.log('o errorMessage é: ' + errorMessage);
+  
+  if(errorMessage){
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+
+  var message = colors.green + 'Sucesso ao associar o novo usuario ao documento.' + colors.reset;
+  callback(null, {message: message});
 }
 
 
@@ -343,7 +378,8 @@ function main() {
     { createDocument: createDocument,
       findDocumentById: findDocumentById,
       findAllDocuments: findAllDocuments,
-      findAllDocumentsWithAcess: findAllDocumentsWithAcess
+      findAllDocumentsWithAcess: findAllDocumentsWithAcess,
+      associateDocumentWithAnotherUser: associateDocumentWithAnotherUser
     });
     
   server.addService(note_proto.Note.service,

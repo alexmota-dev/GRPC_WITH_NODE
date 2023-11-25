@@ -188,6 +188,26 @@ function main() {
     })
   }
 
+  //8 ASSOCIAR OUTRO USUÁRIO AO DOCUMENTO
+  function associateDocumentWithAnotherUserShortcut(callback){
+
+    rl.question('Usuario: ', (userAuth) => {
+      rl.question('Id do Documento: ', (idDocument) => {
+        rl.question('Novo Usuário: ', (newUser) => {
+          clientDocument.associateDocumentWithAnotherUser({idDocument:idDocument, userAuth: userAuth, newUser: newUser}, function(err, response) {
+            if(response.errorMessage){
+              console.log(response.errorMessage);
+            }
+            else if(response.message){
+              console.log(response.message);
+            }
+            callback(true);
+          })
+        });
+      });
+    })
+  }
+
   function findAllDocumentsShortcut(callback){
     clientDocument.findAllDocuments({test:1}, function(err, response) {
       console.log(response);
@@ -250,6 +270,11 @@ function main() {
         break;
       case '8':
         console.log('Ação de ASSOCIAR OUTRO USUÁRIO AO DOCUMENTO seria executada aqui.');
+        associateDocumentWithAnotherUserShortcut((callback)=>{
+          if(callback){
+            startMenu();
+          }
+        })
         break;
       case '9':
         console.log('Ação de LISTAR DOCUMENTOS COM ACESSO apresentando o título de cada documento seria executada aqui.');
@@ -287,7 +312,7 @@ function main() {
     console.log('[5]  - '+ colors.green +'Listar o conteúdo de um documento (todas as notas)'+ colors.reset);
     console.log('[6]  - '+ colors.green +'Apresentar detalhes sobre um documento' + colors.reset);
     console.log('[7]  - '+ colors.green +'Listar usuários existentes no servidor'+ colors.reset);
-    console.log('[8]  - Associar outro usuário ao documento');
+    console.log('[8]  - '+ colors.green +'Associar outro usuário ao documento'+ colors.reset);
     console.log('[9]  - Listar documentos com acesso');
     console.log('[10] - Listar documentos com acesso alterados a partir de uma data/hora');
     console.log('[11] - Listar Todos os DOcumentos sem restrição');

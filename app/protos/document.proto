@@ -32,7 +32,20 @@ service Document {
 
   rpc findAllDocumentsWithAcessShortcut(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
+  rpc associateDocumentWithAnotherUser(AssociateDocumentWithAnotherUserRequest) returns (AssociateDocumentWithAnotherUserResponse) {}
+
 }
+message AssociateDocumentWithAnotherUserRequest{
+  string userAuth = 1;
+  string idDocument = 2;
+  string newUser = 3;
+}
+
+message AssociateDocumentWithAnotherUserResponse{
+  string message = 1;
+  string errorMessage = 2;
+}
+
 message NotesByDocument {
   string id = 1;
   string title = 2;
