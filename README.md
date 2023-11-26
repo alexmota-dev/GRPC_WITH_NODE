@@ -20,12 +20,12 @@
 ##### 1. Criar um documento ✅
 ##### 2. Criar uma nota em um documento ✅
 ##### 3. Editar uma nota em um documento ❌
-##### 4. Listar o conteúdo de uma nota ❌
+##### 4. Listar o conteúdo de uma nota ✅
 ##### 5. Listar o conteúdo de um documento (todas as notas) ✅
 ##### 6. Apresentar detalhes sobre um documento: título, última alteração, usuários com acesso, títulos das notas e indicação se há algum usuário editando alguma nota no momento ✅
 ##### 7. Listar usuários existentes no servidor ✅
-##### 8. Associar um outro usuário ao documento ❌
-##### 9. Listar documentos que têm acesso apresentando o título de cada documento ❌
+##### 8. Associar um outro usuário ao documento ✅
+##### 9. Listar documentos que têm acesso apresentando o título de cada documento ✅
 ##### 10. Listar documentos que têm acesso e que foram alterados a partir de uma data/hora ❌
 
 ##### Anotações

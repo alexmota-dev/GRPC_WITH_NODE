@@ -112,6 +112,16 @@ function findNoteById(idNote){
   return null;
 }
 
+function findDocumentByIdId(idDocument){
+
+  for(i=0; i< documents.length; i++){
+    if(documents[i].id == idDocument){
+      return documents[i];
+    }
+  }
+  return null;
+}
+
 async function documentHasNote(idNote, idDocument) {
   
   var note = findNoteById(idNote);
@@ -233,7 +243,7 @@ async function showNote(call, callback){
     return;
   }
 
-  
+
   var message = colors.green + 'Sucesso ao buscar Nota.' + colors.reset;
   console.log(message);
   callback(null, {note: note, message: message});
@@ -265,17 +275,38 @@ async function editNoteInDocument(call, callback) {
   }
 }
 
-function findAllDocumentsWithAcess(call, callback) {
+async function showDocumentsWithAcess(call, callback) {
+  var userAuth = call.request.userAuth;
   var documentsWithAcess = [];
 
+  console.log("userAuth: ", userAuth);
+
+  errorMessage = await verifyUserIsAuthorized(userAuth);
+  console.log("errorMessage: ", errorMessage);
   for(i=0;i<documents.length;i++){
 
-    if(documents[i].acess.includes(call.request.userAuth)){
+    if(documents[i].acess.includes(userAuth)){
       documentsWithAcess.push(documents[i]);
+      console.log("tem pelo menos um documento. ");
     }
   }
 
-  callback(null, {documentsWithAcess: documentsWithAcess});
+  if(errorMessage){
+    console.log(errorMessage);
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+
+  if(documentsWithAcess.length < 1){
+    var errorMessage = colors.red + 'Nenhum documento encontrado.' + colors.reset;
+    console.log(errorMessage);
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+  var message = colors.green + 'Sucesso ao buscar os documentos.' + colors.reset;
+  console.log(message);
+  console.log(documentsWithAcess);
+  callback(null, {message: message, documentsWithAcess: documentsWithAcess});
 
 }
 
@@ -301,16 +332,20 @@ async function findAllUsers(call, callback) {
 }
 
 function findAllDocuments(call, callback) {
-
-  callback(null, {documents: documents});
+  var acess = []
+  for(i=0;i<documents.length;i++){
+    acess.push(documents[i].acess);
+  }
+  console.log("acess: ", acess);
+  callback(null, {documents: documents, acess: acess});
 
 }
 
-async function findDocumentById(call, callback) {
+async function showDocument(call, callback) {
 
   var userAuth = call.request.userAuth;
-  var id = call.request.id;
-  console.log("dados recebidos id, userAuth: ", id, userAuth);
+  var idDocument = call.request.idDocument;
+  console.log("dados recebidos id, userAuth: ", idDocument, userAuth);
   let documentById = {
     id: null,
     title: null,
@@ -322,33 +357,22 @@ async function findDocumentById(call, callback) {
   let notesById = [];
   
   errorMessage = await verifyUserIsAuthorized(userAuth);
-  errorMessage = await checksUserHasAccessDocument(userAuth, id);
-  errorMessage = await checkDocumentExists(id);
+  console.log("errorMessage: ", errorMessage);
+  documentExists = await checkDocumentExists(idDocument);
+  errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
+  errorMessage = documentExists ? errorMessage : colors.red + 'Documento não existe.' + colors.reset;
 
-  for(i=0;i<documents.length;i++){
-
-    if(documents[i].id == id){
-      documentById.id = documents[i].id;
-      documentById.title = documents[i].title;
-      documentById.latestUpdate = documents[i].latestUpdate;
-      documentById.author = documents[i].author;
-      documentById.acess = documents[i].acess;
-
-    }
-  }
-
+  documentById = findDocumentByIdId(idDocument);
   
+  console.log(documentById);
+
   for(i=0;i<notes.length;i++){
     
-    if(notes[i].idDocument == id){
+    if(notes[i].idDocument == idDocument){
       notesById.push(notes[i]);
     }
   }
   
-  errorMessage = documentById == null ? colors.red + 'Nenhum documento encontrado.' + colors.reset : errorMessage;
-  errorMessage = notesById == null ? colors.red + 'Nenhuma nota encontrada.' + colors.reset : errorMessage;
-
-  console.log("a mensagem de erro é errorMessage", errorMessage);
   if(errorMessage){
     callback(null, {errorMessage: errorMessage});
     return;
@@ -404,9 +428,9 @@ function main() {
 
   server.addService(document_proto.Document.service, 
     { createDocument: createDocument,
-      findDocumentById: findDocumentById,
+      showDocument: showDocument,
       findAllDocuments: findAllDocuments,
-      findAllDocumentsWithAcess: findAllDocumentsWithAcess,
+      showDocumentsWithAcess: showDocumentsWithAcess,
       associateDocumentWithAnotherUser: associateDocumentWithAnotherUser
     });
     

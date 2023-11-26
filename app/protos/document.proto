@@ -26,15 +26,26 @@ service Document {
 
   rpc createDocument (CreateDocumentRequest) returns (CreateDocumentResponse) {}
 
-  rpc findDocumentById (FindDocumentByIdRequest) returns (findDocumentByIdResponse) {}
+  rpc showDocument (FindDocumentByIdRequest) returns (findDocumentByIdResponse) {}
 
   rpc findAllDocuments(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
 
-  rpc findAllDocumentsWithAcessShortcut(FindDocumentsRequest) returns (ReadDocumentsResponse) {}
+  rpc showDocumentsWithAcess(ShowDocumentsWithAcessRequest) returns (ShowDocumentsWithAcessResponse) {}
 
   rpc associateDocumentWithAnotherUser(AssociateDocumentWithAnotherUserRequest) returns (AssociateDocumentWithAnotherUserResponse) {}
 
 }
+
+message ShowDocumentsWithAcessRequest{
+  string userAuth = 1;
+}
+
+message ShowDocumentsWithAcessResponse{
+  repeated DocumentsWithAcess documentsWithAcess = 1;
+  string message = 2;
+  string errorMessage = 3;
+}
+
 message AssociateDocumentWithAnotherUserRequest{
   string userAuth = 1;
   string idDocument = 2;
@@ -55,6 +66,9 @@ message NotesByDocument {
   string idDocument = 6;
 }
 
+message DocumentsWithAcess{
+  string title = 2;
+}
 
 message DocumentById {
   string id = 1;
@@ -66,7 +80,7 @@ message DocumentById {
 
 message FindDocumentByIdRequest {
   string userAuth = 1;
-  string id = 2;
+  string idDocument = 2;
   
 }
 
@@ -99,6 +113,7 @@ message ReadDocumentResponse {
 
 message ReadDocumentsResponse {
   repeated ReadDocumentResponse documents = 1;
+  repeated string acess = 2;
 }
 
 message FindDocumentsRequest{
