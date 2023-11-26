@@ -19,7 +19,7 @@
 ### Funções do sistema
 ##### 1. Criar um documento ✅
 ##### 2. Criar uma nota em um documento ✅
-##### 3. Editar uma nota em um documento ❌
+##### 3. Editar uma nota em um documento ✅
 ##### 4. Listar o conteúdo de uma nota ✅
 ##### 5. Listar o conteúdo de um documento (todas as notas) ✅
 ##### 6. Apresentar detalhes sobre um documento: título, última alteração, usuários com acesso, títulos das notas e indicação se há algum usuário editando alguma nota no momento ✅

@@ -114,20 +114,27 @@ function main() {
   function editNoteInDocumentShortcut(callback){
 
     rl.question('Usuario: ', (userAuth) => {
-      rl.question('Id do Documento: ', (idDocument) => {
-        rl.question('Título da nota: ', (title) => {
-          rl.question('Texto da nota: ', (text) => {
-            clientNote.editNoteInDocument({idDocument:idDocument, text:text, userAuth: userAuth, title: title}, function(err, response) {
-              if(response.errorMessage){
-                console.log(response.errorMessage);
-              }
-              else if(response.message){
-                console.log(response.message);
-              }
-              callback(true);
+      rl.question('Id do Note: ', (idNote) => {
+        clientNote.editNoteInDocument({idNote:idNote, userAuth: userAuth}, function(err, response) {
+          if(response.errorMessage){
+            console.log(response.errorMessage);
+            callback(true);
+          }
+          else if(response.message){
+            console.log("Entrou aqui entao vem mais texto")
+            console.log(response.message);
+            rl.question('Titulo da nota: ', (title) => {
+              rl.question('Texto da nota: ', (text) => {
+                clientNote.secondPartOfEditing({text:text, title: title, idNote: idNote}, function(err, responseSecondPart) {
+                  if(responseSecondPart.message){
+                    console.log(responseSecondPart.message);
+                  }
+                  callback(true);
+                })
+              })
             })
-          });
-        });
+          }
+        })
       });
     });
   }
@@ -276,6 +283,11 @@ function main() {
         break;
       case '3':
         console.log('Ação de EDITAR UMA NOTA EM UM DOCUMENTO seria executada aqui.');
+        editNoteInDocumentShortcut((callback)=>{
+          if(callback){
+            startMenu();
+          }
+        })
         break;
       case '4':
         console.log('Ação de LISTAR O CONTEÚDO DE UMA NOTA seria executada aqui.');

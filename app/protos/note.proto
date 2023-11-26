@@ -32,10 +32,22 @@ service Note {
 
   rpc findAllNotes(FindNotesRequest) returns (FindNotesRequestResponse) {}
 
-  rpc editNoteInDocument(EditNoteInDocumentRequest) returns (FindNotesRequestResponse) {}
+  rpc editNoteInDocument(EditNoteInDocumentRequest) returns (EditNoteInDocumentResponse) {}
+
+  rpc secondPartOfEditing(SecondPartOfEditingRequest) returns (SecondPartOfEditingResponse) {}
 
   rpc findAllNotesByDocument(FindAllNotesByDocumentRequest) returns (FindAllNotesByDocumentResponse) {}
 
+}
+
+message SecondPartOfEditingRequest{
+  string title = 3;
+  string text = 4;
+  string idNote = 5;
+}
+
+message SecondPartOfEditingResponse{
+  string message = 1;
 }
 
 message NoteById {
@@ -112,5 +124,9 @@ message FindAllNotesByDocumentRequest {
 message EditNoteInDocumentRequest{
   string userAuth = 1;
   string idNote = 2;
-  string idDocument = 3;
+}
+
+message EditNoteInDocumentResponse{
+  string message = 2;
+  string errorMessage = 3;
 }

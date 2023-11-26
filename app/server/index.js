@@ -112,6 +112,33 @@ function findNoteById(idNote){
   return null;
 }
 
+async function noteOnEditing(idNote, value){
+
+  for(i=0; i< notes.length; i++){
+    if(notes[i].id == idNote){
+      notes[i].beingEdited = value;
+    }
+  }
+}
+
+function definedTextNote(idNote, text){
+
+  for(i=0; i< notes.length; i++){
+    if(notes[i].id == idNote){
+      notes[i].text = text;
+    }
+  }
+}
+
+function definedTitleNote(idNote, title){
+
+  for(i=0; i< notes.length; i++){
+    if(notes[i].id == idNote){
+      notes[i].title = title;
+    }
+  }
+}
+
 function findDocumentByIdId(idDocument){
 
   for(i=0; i< documents.length; i++){
@@ -161,7 +188,7 @@ async function createDocument(call, callback) {
   var documentCreated = {id: id, title: title, latestUpdate: new Date(), author: author, acess: acess};
   documents.push(documentCreated);
 
-  var message = colors.green + 'Documento criado' + colors.reset;
+  var message = colors.green + 'Documento criado com id: ' + id +'' + colors.reset;
   callback(null, {message: message});
 }
 
@@ -181,7 +208,7 @@ async function createNote(call, callback) {
   }
 
   notes.push({id:id, title: title, text: text, beingEdited: false, userWhoIsEditing: "", idDocument: call.request.idDocument});
-  var message = colors.green + 'Nota criada.' + colors.reset;
+  var message = colors.green + 'Nota criada com o id: ' + id +' '+ colors.reset;
   callback(null, {message: message});
 }
 
@@ -250,11 +277,27 @@ async function showNote(call, callback){
 }
 
 async function editNoteInDocument(call, callback) {
+  console.log("comecou a função editNoteInDocument")
 
   var userAuth = call.request.userAuth;
-  var idDocument = call.request.idDocument;
   var idNote = call.request.idNote;
-  var errorMessage = "default";
+  var note = findNoteById(idNote);
+  
+  if(note == null){
+    var errorMessage = colors.red + 'Nota não existe.' + colors.reset;
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+  var idDocument = note.idDocument; 
+
+  if(note.beingEdited){
+    var errorMessage = colors.red + 'Nota em edição.' + colors.reset;
+    callback(null, {errorMessage: errorMessage});
+    return;
+  }
+
+  await noteOnEditing(idNote, true);
+
   if(!(await auth(userAuth))){
 
     errorMessage = colors.red + 'Usuário não authorizado.' + colors.reset;
@@ -265,14 +308,27 @@ async function editNoteInDocument(call, callback) {
   errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
   if(errorMessage){
     callback(null, {errorMessage: errorMessage});
-  }
-
-  if(!(await documentHasNote(idNote, idDocument))){
-
-    errorMessage = colors.red + 'Não existe nota com o id informado neste documento.' + colors.reset;
-    callback(null, {errorMessage: errorMessage});
     return;
   }
+
+  // Encerra a função aqui
+  callback(null, { message: 'Primeira parte da edição concluída.' });
+  return;
+
+}
+
+async function secondPartOfEditing(call, callback) {
+  var text = call.request.text;
+  var title = call.request.title;
+  var idNote = call.request.idNote;
+
+  definedTextNote(idNote, text);
+  definedTitleNote(idNote, title);
+
+  var message = colors.green + 'Nota editada com sucesso.' + colors.reset;
+  await noteOnEditing(idNote, false);
+  console.log("nota não está em edição")
+  callback(null, { message: message });
 }
 
 async function showDocumentsWithAcess(call, callback) {
@@ -394,14 +450,14 @@ async function associateDocumentWithAnotherUser(call, callback) {
   var newUser = call.request.newUser;
 
   userIsAuthorized = await auth(userAuth);
-  newUser = await auth(newUser);
+  newUserIsAuthorized = await auth(newUser);
   documentExists = await checkDocumentExists(idDocument);
 
   
   errorMessage = await checksUserHasAccessDocument(userAuth, idDocument);
   errorMessage = userIsAuthorized ? errorMessage : colors.red + 'Usuário não authorizado.' + colors.reset;
   console.log('o errorMessage é: ' + errorMessage);
-  errorMessage = newUser ? errorMessage : colors.red + 'O novo usuario não é authorizado.' + colors.reset;
+  errorMessage = newUserIsAuthorized ? errorMessage : colors.red + 'O novo usuario não é authorizado.' + colors.reset;
   console.log('o errorMessage é: ' + errorMessage);
   errorMessage = documentExists ? errorMessage : colors.red + 'Documento não existe.' + colors.reset;
   console.log('o errorMessage é: ' + errorMessage);
@@ -410,6 +466,9 @@ async function associateDocumentWithAnotherUser(call, callback) {
     callback(null, {errorMessage: errorMessage});
     return;
   }
+
+  document = findDocumentByIdId(idDocument);
+  document.acess.push(newUser);
 
   var message = colors.green + 'Sucesso ao associar o novo usuario ao documento.' + colors.reset;
   callback(null, {message: message});
@@ -438,7 +497,8 @@ function main() {
     { createNote: createNote,
       findAllNotesByDocument: findAllNotesByDocument,
       editNoteInDocument: editNoteInDocument,
-      showNote: showNote
+      showNote: showNote,
+      secondPartOfEditing: secondPartOfEditing
     });
     
   server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
